@@ -80,6 +80,44 @@ const addEmployeeQ = {
     name: "newEmployeeName"
 }
 
+//////////////////////////
+// UPDATE QUESTION OBJECTS //
+//////////////////////////
+
+let deptArr = [];
+let roleArr = [];
+let employeeArr = [];
+
+// Update Department
+const updateDeptQ = [
+    {
+    type: "list",
+    message: "Choose the department you would like to update.",
+    choices: deptArr,
+    name: "choiceDept"
+    },
+    {
+    type: "input",
+    message: "Enter a new name for this department.",
+    name: "newDeptName"
+    },
+]
+
+// Update Role
+const updateRoleQ = {
+    type: "input",
+    message: "Enter the name of the role you would like to update.",
+    choices: roleArr,
+    name: "upRoleName"
+}
+
+// Update Employee
+const updateEmployeeQ = {
+    type: "input",
+    message: "Enter the name of the employee you would like to update.",
+    choices: employeeArr,
+    name: "upEmployeeName"
+}
 
 //////////////////////////////
 // STARTER QUESTION PROMPTS //
@@ -190,7 +228,81 @@ function addEmployee() {
     }))
 }
 
+////////////////////////////////////////////////
+// UPDATE GROUP: ALL QUESTIONS RELATED TO ADDING //
+////////////////////////////////////////////////
 
+// UPDATE DEPARTMENT
+function updateDepartment() {
+    connection.query("SELECT * FROM department", function(err,res){
+
+        for(var i=0; i<res.length; i++){
+            deptArr.push((res[i].id))
+            console.log(res[i].id);
+        }
+    
+    inquirer.prompt(updateDeptQ).then((res => { // Asks User to Choose Department to Update
+        console.log("Loading Department to Update...\n")
+        
+        var query = connection.query(
+            "UPDATE department SET ? WHERE ?",
+            [
+                {
+                    name: res.upDeptName
+                },
+                {
+                    id: res.id
+                }
+            ],
+        function(err,res) {
+            if (err) throw err;
+            console.log(res.affectedRows + " department updated!\n");
+        })
+    }))
+})
+}
+
+// UPDATE ROLE
+function updateRole() {
+    inquirer.prompt(updateRoleQ).then((res => {
+        console.log("Updating role...\n")
+        var query = connection.query(
+
+
+// START WORKING HERE - LOOK FOR UPDATE CODE IN ICE CREAM STUFF
+
+
+            "INSERT INTO role SET ?",
+            {
+                name: res.newRoleName
+            },
+        function(err,res) {
+            if(err) throw err;
+            console.log(res.affectedRows + " department inserted!\n")
+        })
+    }))
+}
+
+// UPDATE EMPLOYEE
+function updateEmployee() {
+    inquirer.prompt(updateEmployeeQ).then((res => {
+        console.log("Inserting a new employee...\n")
+        var query = connection.query(
+
+
+// START WORKING HERE - LOOK FOR UPDATE CODE IN ICE CREAM STUFF
+
+
+            "INSERT INTO employee SET ?",
+            {
+                name: res.newEmployeeName
+            },
+        function(err,res) {
+            if(err) throw err;
+            console.log(res.affectedRows + " department inserted!\n")
+        })
+    }))
+}
 
 
 ////////////////////////////////////////////////////////

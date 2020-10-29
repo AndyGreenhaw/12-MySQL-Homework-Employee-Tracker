@@ -45,7 +45,7 @@ VALUES
 ("Production"),
 ("Marketing"),
 ("Sales"),
-("Tech Supper");
+("Tech Support");
 
 ------------------
 -- ROLE INSERTS --

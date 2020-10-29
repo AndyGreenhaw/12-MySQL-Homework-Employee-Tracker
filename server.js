@@ -27,7 +27,7 @@ connection.connect(function(err) {
 const firstQ = {
     type: "list",
     message: "What would you like to do?",
-    choices: ["Add Item", "View Item", "Update Item"],
+    choices: ["Add Item", "View Item", "Update Employee Role"],
     name: "actionItem"
 }
 
@@ -47,24 +47,15 @@ const viewQ = {
     name: "viewChoice"
 }
 
-// Update Prompt
-const updateQ = {
-    type: "list",
-    message: "What would you like to update?",
-    choices: ["Department", "Role", "Employee"],
-    name: "updateChoice"
-}
-
-//////////////////////////
-// ADD QUESTION OBJECTS //
-//////////////////////////
+/////////////////////////////////////
+// QUESTION OBJECTS: ADD FUNCTIONS //
+/////////////////////////////////////
 
 let deptNameArr = [];
-let deptIdArr = []; 
 let roleTitleArr = [];
-let roleIdArr = [];
 let managerNameArr = [];
-let managerIdArr = [];
+let employeeArr = [];
+
 
 // Add Department
 const addDeptQ = {
@@ -113,41 +104,26 @@ const addEmployeeQ =
         name: "addEmployeeRole"
     },
 ]
-//////////////////////////
-// UPDATE QUESTION OBJECTS //
-//////////////////////////
 
-// // Update Department
-// const updateDeptQ = [
-//     {
-//     type: "list",
-//     message: "Choose the department you would like to update.",
-//     choices: deptNameArr,
-//     name: "choiceDept"
-//     },
-//     {
-//     type: "input",
-//     message: "Enter a new name for this department.",
-//     name: "newDeptName"
-//     },
-// ]
+///////////////////////////////////////////
+// QUESTION OBJECT: UPDATE EMPLOYEE ROLE //
+///////////////////////////////////////////
 
-// // Update Role
-// const updateRoleQ = {
-//     type: "input",
-//     message: "Enter the name of the role you would like to update.",
-//     choices: roleArr,
-//     name: "upRoleName"
-// }
-
-// // Update Employee
-// const updateEmployeeQ = {
-//     type: "input",
-//     message: "Enter the name of the employee you would like to update.",
-//     choices: employeeArr,
-//     name: "upEmployeeName"
-// }
-
+const updateEmployeeQ = 
+[
+    {
+        type: "list",
+        message: "Choose the employee who's role you would like to update.",
+        choices: employeeArr,
+        name: "updateEmployee"
+    },
+    {
+        type: "list",
+        message: "Choose the new role you would like to apply to this employee",
+        choices: roleTitleArr,
+        name: "updateNewEmployeeRole"
+    }
+]
 
 //////////////////////////////
 // STARTER QUESTION PROMPTS //
@@ -161,11 +137,11 @@ function firstQuestion() {
             addItem()
         } else if (res.actionItem === "View Item"){
             viewItem()
-        } else if (res.actionItem === "Update Item"){
-            updateItem()
+        } else if (res.actionItem === "Update Employee Role"){
+            updateEmployeeRole()
         };
     }));
-}
+};
 
 // ADD WHAT?
 function addItem() {
@@ -178,7 +154,7 @@ function addItem() {
             addEmployee()
         };
     }));
-}
+};
 
 // VIEW WHAT?
 function viewItem() {
@@ -191,7 +167,7 @@ function viewItem() {
             viewEmployee()
         };
     }));
-}
+};
 
 // UPDATE WHAT?
 function updateItem() {
@@ -204,11 +180,11 @@ function updateItem() {
             updateEmployee()
         };
     }));
-}
+};
 
-////////////////////////////////////////////////
-// ADD GROUP: ALL QUESTIONS RELATED TO ADDING //
-////////////////////////////////////////////////
+////////////////////////////////////////////////////
+// ADD FUNCTIONS: ALL QUESTIONS RELATED TO ADDING //
+////////////////////////////////////////////////////
 
 // ADD DEPARTMENT
 function addDepartment() {
@@ -224,9 +200,10 @@ function addDepartment() {
         function(err,res) {
             if(err) throw err;
             console.log(res.affectedRows + " department inserted!\n")
-        })
-    }))
-}
+            restart()
+        });
+    }));
+};
 
 // ADD ROLE
 function addRole() {
@@ -238,7 +215,7 @@ function addRole() {
         for(var i=0; i<res.length; i++){
             deptNameArr.push((res[i].name))
             console.log("READ " + deptNameArr)
-        }
+        };
     
         // Ask Create Role Questions
         inquirer.prompt(addRoleQ).then((res => {
@@ -260,11 +237,12 @@ function addRole() {
 
             function(err,res) {
                 if(err) throw err;
+                restart()
                 console.log(res.affectedRows + " department inserted!\n")
-            })
-        }))
-    })
-}
+            });
+        }));
+    });
+};
 
 // ADD Employee
 function addEmployee() {
@@ -272,11 +250,10 @@ function addEmployee() {
     connection.query("SELECT role.title, role.id FROM role", function(err,res){
         if (err) throw err
 
-        // Fill Out the Department Array
+        // Fill Out the Role Array
         for(var i=0; i<res.length; i++){
             roleTitleArr.push((res[i].title))
-            console.log("READ " + roleTitleArr)
-        }
+        };
     
         // Ask Create Role Questions
         inquirer.prompt(addEmployeeQ).then((res => {
@@ -298,103 +275,113 @@ function addEmployee() {
 
             function(err,res) {
                 if(err) throw err;
+                restart()
                 console.log(res.affectedRows + " employee inserted!\n")
-            })
-        }))
-    })
-}
+            });
+        }));
+    });
+};
 
+/////////////////////////////////////////////////////
+// VIEW FUNCTIONS: ALL QUESTIONS RELATED TO ADDING //
+/////////////////////////////////////////////////////
 
+// View Department
+function viewDepartment(){
+    connection.query("SELECT * FROM department", function(err,res){
+        if(err) throw err;
+        console.log(res);
+        restart();
+    });
+};
 
+// View Role
+function viewRole(){
+    connection.query("SELECT * FROM role", function(err,res){
+        if(err) throw err;
+        console.log(res);
+        restart();
+    });
+};
 
+// View Employee
+function viewEmployee(){
+    connection.query("SELECT * FROM employee", function(err,res){
+        if(err) throw err;
+        console.log(res);
+        restart();
+    });
+};
 
+//////////////////////////
+// UPDATE EMPLOYEE ROLE //
+//////////////////////////
 
+function updateEmployeeRole(){
+    connection.query("SELECT employee.first_name, employee.last_name, employee.role_id FROM employee", function (err, res){
+        if(err) throw err;
 
-
-
-
-////////////////////////////////////////////////
-// UPDATE GROUP: ALL QUESTIONS RELATED TO ADDING //
-////////////////////////////////////////////////
-
-// // UPDATE DEPARTMENT
-// function updateDepartment() {
-//     connection.query("SELECT * FROM department", function(err,res){
-
-//         for(var i=0; i<res.length; i++){
-//             deptNameArr.push((res[i].id))
-//             console.log(res[i].id);
-//         }
-    
-//     inquirer.prompt(updateDeptQ).then((res => { // Asks User to Choose Department to Update
-//         console.log("Loading Department to Update...\n")
+        // Fill Out the Employee Array
+        for(var i=0; i<res.length; i++){
+            employeeArr.push((res[i].first_name) + " " + (res[i].last_name))
+        }
         
-//         var query = connection.query(
-//             "UPDATE department SET ? WHERE ?",
-//             [
-//                 {
-//                     name: res.upDeptName
-//                 },
-//                 {
-//                     id: res.id
-//                 }
-//             ],
-//         function(err,res) {
-//             if (err) throw err;
-//             console.log(res.affectedRows + " department updated!\n");
-//         })
-//     }))
-// })
-// }
+        connection.query("SELECT role.title, role.id FROM role", function (err, res){
+            if(err) throw err;
 
-// // UPDATE ROLE
-// function updateRole() {
-//     inquirer.prompt(updateRoleQ).then((res => {
-//         console.log("Updating role...\n")
-//         var query = connection.query(
+            // Fill Out the Role Array
+            for(var i=0; i<res.length; i++){
+                roleTitleArr.push((res[i].title))
+            }
+        
+            inquirer.prompt(updateEmployeeQ).then((res => {
 
+                // Convert Arrays to IDs
+                let updateEmployeeId = (1 + employeeArr.indexOf(res.updateEmployee))
+                let updateRoleId = (1 + roleTitleArr.indexOf(res.updateNewEmployeeRole))
 
-// // START WORKING HERE - LOOK FOR UPDATE CODE IN ICE CREAM STUFF
+                console.log("READ " + updateRoleId)
+                console.log("READ " + updateEmployeeId)
 
+                connection.query("UPDATE employee SET ? WHERE ?",
+                    [
+                        {
+                            role_id: updateRoleId
+                        },
+                        {
+                            id: updateEmployeeId
+                        }
+                    ],
 
-//             "INSERT INTO role SET ?",
-//             {
-//                 name: res.newRoleTitle
-//             },
-//         function(err,res) {
-//             if(err) throw err;
-//             console.log(res.affectedRows + " department inserted!\n")
-//         })
-//     }))
-// }
+                    function(err,res) {
+                        if(err) throw err;
+                        console.log(res.affectedRows + " Employee Role Updated!\n");
+                        restart();
+                    }
+                );
+            }));
+    
+        });
+    });
+};
 
-// // UPDATE EMPLOYEE
-// function updateEmployee() {
-//     inquirer.prompt(updateEmployeeQ).then((res => {
-//         console.log("Inserting a new employee...\n")
-//         var query = connection.query(
+////////////////////////
+// TRY AGAIN FUNCTION //
+////////////////////////
 
-
-// // START WORKING HERE - LOOK FOR UPDATE CODE IN ICE CREAM STUFF
-
-
-//             "INSERT INTO employee SET ?",
-//             {
-//                 name: res.newEmployeeName
-//             },
-//         function(err,res) {
-//             if(err) throw err;
-//             console.log(res.affectedRows + " department inserted!\n")
-//         })
-//     }))
-// }
-
-
-////////////////////////////////////////////////////////
-// function afterConnection() {
-//     connection.query("SELECT * FROM role", function(err, res) {
-//         if (err) throw err;
-//         console.log(res);
-//         connection.end();
-//     });
-// }
+function restart(){
+    inquirer.prompt(
+        {
+            type: "list",
+            message: "Would you like to do add, view, or update any other entries?",
+            choices: ["Yes","No"],
+            name: "restart"
+        }
+    ).then((res => {
+        if(res.restart === "Yes"){
+            firstQuestion();
+        } else {
+            console.log("Have a Great Day!");
+        };
+    }));
+};

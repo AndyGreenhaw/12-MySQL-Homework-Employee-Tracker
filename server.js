@@ -57,8 +57,8 @@ const managerNumber = 5;
 // Establish Arrays
 let deptNameArr = [];
 let roleTitleArr = [];
-let managerFirstNameArr = [];
-let managerLastNameArr = [];
+let updateRoleTitleArr = [];
+let managerArr = [];
 let employeeArr = [];
 
 // Add Department
@@ -107,6 +107,12 @@ const addEmployeeQ =
         choices: roleTitleArr,
         name: "addEmployeeRole"
     },
+    {
+        type: "list",
+        message: "Choose a manager for this employee.",
+        choices: managerArr,
+        name: "addEmployeeManager"
+    },
 ]
 
 ///////////////////////////////////////////
@@ -124,7 +130,7 @@ const updateEmployeeQ =
     {
         type: "list",
         message: "Choose the new role you would like to apply to this employee",
-        choices: roleTitleArr,
+        choices: updateRoleTitleArr,
         name: "updateNewEmployeeRole"
     }
 ]
@@ -173,19 +179,6 @@ function viewItem() {
     }));
 };
 
-// UPDATE WHAT?
-// function updateItem() {
-//     inquirer.prompt(updateQ).then((res => {
-//         if(res.updateChoice === "Department"){
-//             updateDepartment()
-//         } else if (res.updateChoice === "Role"){
-//             updateRole()
-//         } else if (res.updateChoice === "Employee"){
-//             updateEmployee()
-//         };
-//     }));
-// };
-
 ////////////////////////////////////////////////////
 // ADD FUNCTIONS: ALL QUESTIONS RELATED TO ADDING //
 ////////////////////////////////////////////////////
@@ -194,16 +187,18 @@ function viewItem() {
 function addDepartment() {
     // Ask Create Department Questions
     inquirer.prompt(addDeptQ).then((res => {
-        console.log("Inserting a new department...\n")
+        console.log("\n Inserting a new department...\n")
         // Set
         var query = connection.query(
             "INSERT INTO department SET ?",
             {
                 name: res.addDeptName
             },
+
+        // Print Success
         function(err,res) {
             if(err) throw err;
-            console.log(res.affectedRows + " department inserted!\n")
+            console.log("New Department Added to Department Table!\n")
             restart()
         });
     }));
@@ -218,17 +213,14 @@ function addRole() {
         // Fill Out the Department Array
         for(var i=0; i<res.length; i++){
             deptNameArr.push((res[i].name))
-            console.log("READ " + deptNameArr)
         };
     
         // Ask Create Role Questions
         inquirer.prompt(addRoleQ).then((res => {
+            console.log("\n Inserting a new role...\n")
 
             // Convert Dept Name to Dept ID
             let addDeptID = (1+ deptNameArr.indexOf(res.addDeptName))
-            console.log("READ" + addDeptID)
-
-            console.log("Inserting a new role...\n")
 
             // Insert New Data
             var query = connection.query(
@@ -238,11 +230,12 @@ function addRole() {
                     salary: res.addSalary,
                     department_id: addDeptID 
                 },
-
+            
+            // Print Success
             function(err,res) {
                 if(err) throw err;
+                console.log("New Role Added to Role Table!\n")
                 restart()
-                console.log(res.affectedRows + " department inserted!\n")
             });
         }));
     });
@@ -251,20 +244,28 @@ function addRole() {
 // ADD Employee
 function addEmployee() {
 
-    connection.query("SELECT role.title, role.id FROM role", function(err,res){
-        if (err) throw err
+    connection.query("SELECT * FROM role", function(err,res){
+        if (err) throw err;
 
         // Fill Out the Role Array
         for(var i=0; i<res.length; i++){
             roleTitleArr.push((res[i].title))
         };
+
+        // Fill Manager Name Array
+        for(var i=0 ; i < managerNumber ; i++){
+            managerArr.push(res[i].title)
+        };
     
         // Ask Create Role Questions
         inquirer.prompt(addEmployeeQ).then((res => {
+            console.log("\n Inserting a new employee...\n")
 
             // Convert Dept Name to Dept ID
-            let addRoleId = (1 + roleTitleArr.indexOf(res.addEmployeeRole))
-            console.log("READ" + addRoleId)
+            let addRoleId = (roleTitleArr.indexOf(res.addEmployeeRole))
+
+            // Convert Manager Name to Dept ID
+            let addManagerId = (managerArr.indexOf(res.addEmployeeManager))
 
             // Insert New Data
             var query = connection.query(
@@ -272,12 +273,13 @@ function addEmployee() {
                 {
                     first_name: res.addEmployeeFirstName,
                     last_name: res.addEmployeeLastName,
-                    role_id: addRoleId 
+                    role_id: addRoleId,
+                    manager_id: addManagerId
                 },
 
             function(err,res) {
                 if(err) throw err;
-                console.log(res.affectedRows + " employee inserted!\n")
+                console.log("New Employee Added to Employee Table!\n")
                 restart()
             });
         }));
@@ -292,65 +294,86 @@ function addEmployee() {
 function viewDepartment(){
     connection.query("SELECT * FROM department", function(err,res){
         if(err) throw err;
-        console.log(res);
+
+        // Format Data for User Readability
+        for(var i=0; i<res.length; i++)
+        console.log(
+            " ----------" + "\n",
+            "DEPARTMENT " + res[i].id + ": " + res[i].name + "\n",
+            "----------" + "\n",
+            );
         restart();
     });
 };
 
 // View Role
 function viewRole(){
-    connection.query("SELECT * FROM role", function(err,res){
+
+    connection.query("SELECT * FROM department", function(err,res){
         if(err) throw err;
 
-        for(var i=0; i<res.length ; i++){
-            
-            // Convert Department ID to Name
-            // deptNameArr.push((res[i].name))
-
-            // let departmentName = deptNameArr[i];
-            // console.log("READ2" + departmentName)
-            // console.log("READ3" + deptNameArr[i])
-            // console.log("READ" + deptNameArr)
-
-            console.log(
-                "ROLE ID: " + (i+1) + ":" + "\n",
-                "----------" + "\n",
-                "Title: " + res[i].title + "\n",
-                "Salary: $" + res[i].salary + "\n",
-                "Department ID: " + res[i].department_id + "\n",
-                // "Department Name: " + departmentName + "\n",
-                "----------" + "\n");
-            
+        // Fill Out the Department Array
+        for(var i=0; i<res.length; i++){
+            deptNameArr.push((res[i].name))
         };
-        restart();
+    
+        connection.query("SELECT * FROM role", function(err,res){
+            if(err) throw err;
+
+            // Format Data for User Readability
+            for(var i=0; i<res.length ; i++){
+
+                console.log(
+                    " ----------" + "\n",
+                    "ROLE: " + (i+1) + "\n",
+                    "----------" + "\n",
+                    "Title: " + res[i].title + "\n",
+                    "Salary: $" + res[i].salary + "\n",
+                    "Department: " + deptNameArr[res[i].department_id] + "\n",
+                    "Department ID: " + res[i].department_id + "\n",
+                    // "Department Name: " + departmentName + "\n",
+                    "----------" + "\n");
+                
+            };
+            restart();
+        });
     });
 };
 
 // View Employee
 function viewEmployee(){
-    connection.query("SELECT * FROM employee", function(err,res){
-        if(err) throw err;
+    connection.query("SELECT * FROM role", function(err,res){
 
-        // Fill Manager Name Arrays
-        let managerFirstNameArr =[];
-        let managerLastNameArr = [];
-        for(var i=0 ; i < managerNumber ; i++){
-            managerFirstNameArr.push(res[i].first_name)
-            managerLastNameArr.push(res[i].last_name)
-        };
+        let roleTitleArr = [];
 
-        // Print Data
-        for(var i=0; i<res.length ; i++){
-            console.log(
-                "EMPLOYEE ID: " + (i+1) + ":" + "\n",
-                "----------" + "\n",
-                "Name: " + res[i].first_name + res[i].last_name + "\n",
-                "Role ID: " + res[i].role_id + "\n",
-                "Manager: " + managerFirstNameArr[i] + " " + managerLastNameArr[i] + "\n",
-                "----------" + "\n");
+        // Fill Out the Role Array
+        for(var i=0; i<res.length; i++){
+            roleTitleArr.push((res[i].title))       
         };
-        console.log("READ" + managerFirstNameArr[0]);
-        restart();
+        
+        connection.query("SELECT * FROM employee", function(err,res){
+            if(err) throw err;
+            console.log("READ " + roleTitleArr[0])
+            // Fill Manager Name Arrays
+            let managerNameTitle =[];
+            for(var i=0 ; i < managerNumber ; i++){
+                managerNameTitle.push(res[i].first_name + " " + res[i].last_name + " - " + roleTitleArr[i])
+            };
+
+            // Format Data for User Readability
+            for(var i=0; i<res.length ; i++){
+                console.log(
+                    " ----------" + "\n",
+                    "EMPLOYEE: " + (i+1) + "\n",
+                    "----------" + "\n",
+                    "Name: " + res[i].first_name + " " + res[i].last_name + "\n",
+                    "Role: " + roleTitleArr[res[i].role_id] + "\n", 
+                    "Role ID: " + res[i].role_id + "\n",
+                    "Manager: " + managerNameTitle[res[(i)].manager_id] + "\n",
+                    "----------" + "\n");
+            };
+            restart();
+        });
     });
 };
 
@@ -359,30 +382,28 @@ function viewEmployee(){
 //////////////////////////
 
 function updateEmployeeRole(){
-    connection.query("SELECT employee.first_name, employee.last_name, employee.role_id FROM employee", function (err, res){
+    connection.query("SELECT * FROM employee", function (err, res){
         if(err) throw err;
 
         // Fill Out the Employee Array
-        for(var i=0; i<res.length; i++){
+        for(var i=0; i < 20 ; i++){
             employeeArr.push((res[i].first_name) + " " + (res[i].last_name))
         }
         
-        connection.query("SELECT role.title, role.id FROM role", function (err, res){
+        connection.query("SELECT * FROM role", function (err, res){
             if(err) throw err;
 
             // Fill Out the Role Array
             for(var i=0; i<res.length; i++){
-                roleTitleArr.push((res[i].title))
+                updateRoleTitleArr.push((res[i].title))
             }
         
             inquirer.prompt(updateEmployeeQ).then((res => {
+                console.log("\n Updating Employee Data...\n")
 
                 // Convert Arrays to IDs
-                let updateEmployeeId = (1 + employeeArr.indexOf(res.updateEmployee))
-                let updateRoleId = (1 + roleTitleArr.indexOf(res.updateNewEmployeeRole))
-
-                console.log("READ " + updateRoleId)
-                console.log("READ " + updateEmployeeId)
+                let updateEmployeeId = (employeeArr.indexOf(res.updateEmployee))
+                let updateRoleId = (updateRoleTitleArr.indexOf(res.updateNewEmployeeRole))
 
                 connection.query("UPDATE employee SET ? WHERE ?",
                     [
@@ -396,7 +417,7 @@ function updateEmployeeRole(){
 
                     function(err,res) {
                         if(err) throw err;
-                        console.log(res.affectedRows + " Employee Role Updated!\n");
+                        console.log("Employee's Role Updated!\n");
                         restart();
                     }
                 );

@@ -99,6 +99,18 @@ VALUES
 -- Tech Support Employees
 ("Kevin","Keables", 11, 5); -- 11
 
+----------------
+-- JOIN ITEMS --
+----------------
+SELECT * FROM role;
+SELECT * FROM employee;
+
+-- show ALL books with authors
+-- INNER JOIN will only return all matching values from both tables
+SELECT first_name, last_name, role_id
+FROM role
+LEFT JOIN employee ON role.id = employee.role_id;
+
 ---------------------
 --SELECTOR EXAMPLE --
 ---------------------

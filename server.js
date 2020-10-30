@@ -51,11 +51,15 @@ const viewQ = {
 // QUESTION OBJECTS: ADD FUNCTIONS //
 /////////////////////////////////////
 
+// Establish Current Number of Managers
+const managerNumber = 5;
+
+// Establish Arrays
 let deptNameArr = [];
 let roleTitleArr = [];
-let managerNameArr = [];
+let managerFirstNameArr = [];
+let managerLastNameArr = [];
 let employeeArr = [];
-
 
 // Add Department
 const addDeptQ = {
@@ -170,17 +174,17 @@ function viewItem() {
 };
 
 // UPDATE WHAT?
-function updateItem() {
-    inquirer.prompt(updateQ).then((res => {
-        if(res.updateChoice === "Department"){
-            updateDepartment()
-        } else if (res.updateChoice === "Role"){
-            updateRole()
-        } else if (res.updateChoice === "Employee"){
-            updateEmployee()
-        };
-    }));
-};
+// function updateItem() {
+//     inquirer.prompt(updateQ).then((res => {
+//         if(res.updateChoice === "Department"){
+//             updateDepartment()
+//         } else if (res.updateChoice === "Role"){
+//             updateRole()
+//         } else if (res.updateChoice === "Employee"){
+//             updateEmployee()
+//         };
+//     }));
+// };
 
 ////////////////////////////////////////////////////
 // ADD FUNCTIONS: ALL QUESTIONS RELATED TO ADDING //
@@ -208,7 +212,7 @@ function addDepartment() {
 // ADD ROLE
 function addRole() {
     
-    connection.query("SELECT * FROM department", function(err,res){
+    connection.query("SELECT * FROM department ", function(err,res){
         if(err) throw err;
 
         // Fill Out the Department Array
@@ -262,8 +266,6 @@ function addEmployee() {
             let addRoleId = (1 + roleTitleArr.indexOf(res.addEmployeeRole))
             console.log("READ" + addRoleId)
 
-            console.log("Inserting a new role...\n")
-
             // Insert New Data
             var query = connection.query(
                 "INSERT INTO employee SET ?",
@@ -275,8 +277,8 @@ function addEmployee() {
 
             function(err,res) {
                 if(err) throw err;
-                restart()
                 console.log(res.affectedRows + " employee inserted!\n")
+                restart()
             });
         }));
     });
@@ -299,7 +301,27 @@ function viewDepartment(){
 function viewRole(){
     connection.query("SELECT * FROM role", function(err,res){
         if(err) throw err;
-        console.log(res);
+
+        for(var i=0; i<res.length ; i++){
+            
+            // Convert Department ID to Name
+            // deptNameArr.push((res[i].name))
+
+            // let departmentName = deptNameArr[i];
+            // console.log("READ2" + departmentName)
+            // console.log("READ3" + deptNameArr[i])
+            // console.log("READ" + deptNameArr)
+
+            console.log(
+                "ROLE ID: " + (i+1) + ":" + "\n",
+                "----------" + "\n",
+                "Title: " + res[i].title + "\n",
+                "Salary: $" + res[i].salary + "\n",
+                "Department ID: " + res[i].department_id + "\n",
+                // "Department Name: " + departmentName + "\n",
+                "----------" + "\n");
+            
+        };
         restart();
     });
 };
@@ -308,7 +330,26 @@ function viewRole(){
 function viewEmployee(){
     connection.query("SELECT * FROM employee", function(err,res){
         if(err) throw err;
-        console.log(res);
+
+        // Fill Manager Name Arrays
+        let managerFirstNameArr =[];
+        let managerLastNameArr = [];
+        for(var i=0 ; i < managerNumber ; i++){
+            managerFirstNameArr.push(res[i].first_name)
+            managerLastNameArr.push(res[i].last_name)
+        };
+
+        // Print Data
+        for(var i=0; i<res.length ; i++){
+            console.log(
+                "EMPLOYEE ID: " + (i+1) + ":" + "\n",
+                "----------" + "\n",
+                "Name: " + res[i].first_name + res[i].last_name + "\n",
+                "Role ID: " + res[i].role_id + "\n",
+                "Manager: " + managerFirstNameArr[i] + " " + managerLastNameArr[i] + "\n",
+                "----------" + "\n");
+        };
+        console.log("READ" + managerFirstNameArr[0]);
         restart();
     });
 };

@@ -346,15 +346,15 @@ function viewEmployee(){
 
         let roleTitleArr = [];
 
-        // Fill Out the Role Array
+        // Fill Role Title Array
         for(var i=0; i<res.length; i++){
             roleTitleArr.push((res[i].title))       
         };
         
         connection.query("SELECT * FROM employee", function(err,res){
             if(err) throw err;
-            console.log("READ " + roleTitleArr[0])
-            // Fill Manager Name Arrays
+
+            // Fill Manager Name Array
             let managerNameTitle =[];
             for(var i=0 ; i < managerNumber ; i++){
                 managerNameTitle.push(res[i].first_name + " " + res[i].last_name + " - " + roleTitleArr[i])
@@ -367,9 +367,11 @@ function viewEmployee(){
                     "EMPLOYEE: " + (i+1) + "\n",
                     "----------" + "\n",
                     "Name: " + res[i].first_name + " " + res[i].last_name + "\n",
-                    "Role: " + roleTitleArr[res[i].role_id] + "\n", 
+                    // Note: Added a -1 to Match Array Index Format
+                    "Role: " + roleTitleArr[((res[i].role_id)-1)] + "\n", 
                     "Role ID: " + res[i].role_id + "\n",
-                    "Manager: " + managerNameTitle[res[(i)].manager_id] + "\n",
+                    // Note: Added a -1 to Match Array Index Format 
+                    "Manager: " + managerNameTitle[(res[(i)].manager_id-1)] + "\n",
                     "----------" + "\n");
             };
             restart();
@@ -382,28 +384,47 @@ function viewEmployee(){
 //////////////////////////
 
 function updateEmployeeRole(){
-    connection.query("SELECT * FROM employee", function (err, res){
+    connection.query("SELECT * FROM role", function (err, res){
         if(err) throw err;
 
-        // Fill Out the Employee Array
-        for(var i=0; i < 20 ; i++){
-            employeeArr.push((res[i].first_name) + " " + (res[i].last_name))
+        // Fill Out Array for New Role Names to Update To
+        for(var i=0; i < res.length ; i++){
+            updateRoleTitleArr.push((res[i].title))    
         }
+
+        console.log("READ:" + updateRoleTitleArr)
         
-        connection.query("SELECT * FROM role", function (err, res){
+        connection.query("SELECT * FROM employee", function (err, res){
             if(err) throw err;
 
-            // Fill Out the Role Array
+            // Fill Out the Employee Array
             for(var i=0; i<res.length; i++){
-                updateRoleTitleArr.push((res[i].title))
+                employeeArr.push((res[(i)].first_name) + " " + (res[(i)].last_name))
             }
-        
+
             inquirer.prompt(updateEmployeeQ).then((res => {
                 console.log("\n Updating Employee Data...\n")
 
-                // Convert Arrays to IDs
-                let updateEmployeeId = (employeeArr.indexOf(res.updateEmployee))
-                let updateRoleId = (updateRoleTitleArr.indexOf(res.updateNewEmployeeRole))
+                // Convert Employee Name to ID
+                // Note: Added 1 to Offset Array Index Format
+                let employeeToUpdate = (employeeArr.indexOf(res.updateEmployee)+1)
+
+                // Convert Role Title to ID
+                // Note: Added 1 to Offset Array Index Format
+                let updateRoleId = (updateRoleTitleArr.indexOf(res.updateNewEmployeeRole)+1)
+
+                // Match Role ID to Employee
+                // let roleMatch = []
+                // for(var i=0; i<res.length; i++){
+                //     roleTitleArr.push((res[i].title))       
+                // };
+
+                // Console Logs
+                console.log(res.updateEmployee)
+                // console.log("Old Role ID: " + res.role_id)
+                console.log("New Role ID: " + updateRoleId)
+                console.log("New Role: " + res.updateNewEmployeeRole + " " + updateRoleId)
+                console.log()
 
                 connection.query("UPDATE employee SET ? WHERE ?",
                     [
@@ -411,13 +432,12 @@ function updateEmployeeRole(){
                             role_id: updateRoleId
                         },
                         {
-                            id: updateEmployeeId
+                            id: employeeToUpdate
                         }
                     ],
-
                     function(err,res) {
                         if(err) throw err;
-                        console.log("Employee's Role Updated!\n");
+                        console.log(res.affectedRows + " \nEmployee Role Updated!\n");
                         restart();
                     }
                 );

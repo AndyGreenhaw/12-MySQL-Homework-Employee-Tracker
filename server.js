@@ -262,10 +262,10 @@ function addEmployee() {
             console.log("\n Inserting a new employee...\n")
 
             // Convert Dept Name to Dept ID
-            let addRoleId = (roleTitleArr.indexOf(res.addEmployeeRole))
+            let addRoleId = (roleTitleArr.indexOf(res.addEmployeeRole)+1)
 
             // Convert Manager Name to Dept ID
-            let addManagerId = (managerArr.indexOf(res.addEmployeeManager))
+            let addManagerId = (managerArr.indexOf(res.addEmployeeManager)+1)
 
             // Insert New Data
             var query = connection.query(
@@ -329,7 +329,8 @@ function viewRole(){
                     "----------" + "\n",
                     "Title: " + res[i].title + "\n",
                     "Salary: $" + res[i].salary + "\n",
-                    "Department: " + deptNameArr[res[i].department_id] + "\n",
+                    // Add -1 to Offset Array Starting at 0
+                    "Department: " + deptNameArr[((res[i].department_id)-1)] + "\n",
                     "Department ID: " + res[i].department_id + "\n",
                     // "Department Name: " + departmentName + "\n",
                     "----------" + "\n");
